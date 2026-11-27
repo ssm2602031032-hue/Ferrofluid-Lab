@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ferrofluid Lab · 磁流体实验室</title><link rel="stylesheet" href="style.css"><script defer src="src/fft.js"></script><script defer src="src/physics.js"></script><script defer src="src/renderer.js"></script><script defer src="src/app.js"></script></head>
+<body>
+ <main id="app">
+  <section class="stage" aria-label="磁流体交互预览">
+   <canvas id="scene" aria-label="磁流体实时渲染，拖动可施加局部磁场" tabindex="0"></canvas>
+   <header><a class="wordmark" href="./">F<span>∿</span> / FERROFLUID</a><span class="tag">MATERIAL STUDY 01</span></header>
+   <div class="caption"><span class="eyebrow" id="sceneIndex">01 / FREE SURFACE</span><h1 id="sceneTitle">让磁场显形。</h1><p id="sceneDescription">平静液面 → 失稳起峰 → 撤场回落</p></div>
+   <div class="stage-tools"><button id="pause" aria-label="暂停模拟">暂停</button><button id="reset">重新实验</button><button id="clean">纯净预览</button><button id="capture">保存图片</button></div>
+   <div class="stage-foot"><span id="interactionHint">按住液面移动磁极 · 右键拖动转动视角 · 滚轮缩放</span><span id="fps">— FPS</span></div>
+   <div id="error" role="alert" hidden></div>
+  </section>
+  <aside id="controls">
+   <div class="panel-heading"><span class="eyebrow">THE FIELD / THE RESPONSE</span><h2>磁场与响应</h2><p>同一种材料，不同的边界条件。</p></div>
+   <div class="mode-tabs" role="group" aria-label="实验场景"><button id="surfaceMode" class="active">自由液面</button><button id="cellMode">薄层图案</button></div>
+   <div class="presets" role="group" aria-label="预设实验"><button data-preset="rest">静置</button><button data-preset="onset">临界附近</button><button data-preset="peaks" class="selected">尖峰</button><button data-preset="labyrinth">迷宫</button><button data-preset="drops">分滴</button><button data-preset="video">视频光学</button></div>
+   <section class="control-section"><div class="section-label"><span>01</span> 场与材料</div>
+    <label for="field">外加法向磁感应强度 <output id="fieldValue"></output></label><input id="field" type="range" min="0" max="20" step="0.1" value="17">
+    <button id="removeField" class="secondary wide">撤去磁场，观察恢复</button>
+    <label for="viscosity">动力黏度 <output id="viscosityValue"></output></label><input id="viscosity" type="range" min="6" max="65" step="1" value="18">
+    <label for="sigma">表面／界面张力 <output id="sigmaValue"></output></label><input id="sigma" type="range" min="15" max="45" step="1" value="29">
+    <div id="surfaceSettings"><label for="depth">平均液深 <output id="depthValue"></output></label><input id="depth" type="range" min="0.45" max="1.4" step="0.05" value="0.85"></div>
+    <div id="cellSettings" hidden><label for="gap">薄腔间隙 <output id="gapValue"></output></label><input id="gap" type="range" min="0.15" max="0.7" step="0.05" value="0.35"><label for="fraction">磁性液相比例 <output id="fractionValue"></output></label><input id="fraction" type="range" min="0.23" max="0.62" step="0.01" value="0.48"></div>
+    <label for="gradient">横向场梯度 <output id="gradientValue"></output></label><input id="gradient" type="range" min="-1" max="1" step="0.05" value="0">
+   </section>
+   <section class="control-section"><div class="section-label"><span>02</span> 灯光与光学</div>
+    <label for="roughness">表面粗糙度 <output id="roughnessValue"></output></label><input id="roughness" type="range" min="0.04" max="0.4" step="0.01" value="0.12">
+    <label for="ior">液体折射率 <output id="iorValue"></output></label><input id="ior" type="range" min="1.33" max="1.65" step="0.01" value="1.47">
+    <label for="exposure">曝光 <output id="exposureValue"></output></label><input id="exposure" type="range" min="0.4" max="2" step="0.05" value="1.15">
+    <div id="cellOptics" hidden><label class="check"><input id="amber" type="checkbox" checked> 琥珀色透射背景</label><label class="check"><input id="inclusion" type="checkbox"> 固定凸透镜对照与折射</label></div>
+    <label class="check"><input id="fieldOverlay" type="checkbox"> 显示局部磁压作用区</label>
+   </section>
+   <section class="control-section"><div class="section-label"><span>03</span> 实时状态</div><dl><div><dt>磁性相质量误差</dt><dd id="mass">—</dd></div><div><dt>模拟时间</dt><dd id="simTime">—</dd></div><div><dt>形变幅度 RMS</dt><dd id="amplitude">—</dd></div><div><dt>毛细长度</dt><dd id="capillary">—</dd></div></dl><p class="model-note" id="modelStatus">守恒降阶模型 · 周期边界</p>
+    <label for="speed">实验播放速度 <output id="speedValue">1×</output></label><input id="speed" type="range" min="0.25" max="3" step="0.25" value="1">
+    <label for="quality">渲染精度</label><select id="quality"><option value="0.65">流畅</option><option value="1" selected>标准</option><option value="1.4">高清</option></select>
+    <label class="check"><input id="audio" type="checkbox"> 系统音频驱动磁场（Wallpaper Engine）</label><p class="tiny" id="audioNote">网页中不采集麦克风；音频模式需在 Wallpaper Engine 中运行。</p>
+   </section>
+   <details><summary>这个版本模拟了什么</summary><p>自由液面使用包含重力、毛细力、法向磁场失稳与黏性耗散的守恒谱模型；薄层使用带非局域偶极核的守恒相场模型。它们是可交互的降阶近似，未求解完整三维流场与 Maxwell 边界问题。</p><p>金色来自透射背景和吸收，黑色油性高光来自环境反射。视频中的透明物体类型无法仅凭画面确认；此处选择固定凸透镜作为光学对照，不模拟运动气泡。</p><p><a href="docs/研究与物理边界.md" target="_blank">研究依据与限制 ↗</a></p></details>
+   <footer>HOPEMAFEI / MATERIAL PHYSICS STUDY<br><a href="https://github.com/0ran/HopeMafei" target="_blank" rel="noopener">上游项目</a> · <button id="exportState" class="text-button">导出实验参数</button></footer>
+  </aside>
+ </main><button id="restore" hidden>显示控制面板</button>
+</body></html>

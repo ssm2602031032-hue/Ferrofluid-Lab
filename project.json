@@ -1,0 +1,12 @@
+{
+ "title":"Ferrofluid Lab · 磁流体物理研究",
+ "type":"web","file":"index.html","description":"Conserved reduced free-surface and confined-film models. Offline WebGL2. Not a full 3D ferrohydrodynamics solver.","preview":"preview.jpg",
+ "general":{"supportsaudioprocessing":true,"properties":{
+  "mode":{"text":"实验场景","type":"combo","value":0,"options":[{"label":"自由液面","value":0},{"label":"薄层迷宫","value":1}],"order":0},
+  "field":{"text":"法向磁感应强度 / mT","type":"slider","value":17.4,"min":0,"max":20,"step":0.1,"order":1},
+  "viscosity":{"text":"动力黏度 / mPa·s","type":"slider","value":18,"min":6,"max":65,"step":1,"order":2},
+  "clean":{"text":"纯净预览","type":"bool","value":true,"order":3},
+  "audio":{"text":"系统音频驱动磁场","type":"bool","value":false,"order":4},
+  "quality":{"text":"渲染分辨率比例","type":"slider","value":1,"min":0.65,"max":1.4,"step":0.05,"order":5}
+ }}
+}
